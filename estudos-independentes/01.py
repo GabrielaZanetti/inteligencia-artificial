@@ -109,6 +109,12 @@ def buscar_top_decada(token: str, genero: str, decada: tuple, market="BR"):
         "link": top.get("external_urls", {}).get("spotify"),
     }
 
+def explicar_recomendacao(genero, decada, rec):
+    return (
+        f"A música '{rec['title']}' foi escolhida porque é a mais popular "
+        f"entre as faixas de {genero} lançadas entre {decada[0]} e {decada[1]} "
+        f"segundo o Spotify."
+    )
 
 def main():
     print("=== Sistema Especialista Musical (Spotify) ===")
@@ -145,6 +151,7 @@ def main():
     print(f"📈 Popularidade: {rec['popularity']}")
     if rec.get("link"):
         print(f"🔗 Spotify: {rec['link']}")
+    print(f"ℹ️ Explicação: {explicar_recomendacao(genero, decada, rec)}")
 
 
 if __name__ == "__main__":
