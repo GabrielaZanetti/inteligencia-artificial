@@ -1,7 +1,4 @@
-# especialista_spotify_decada.py
-# Sistema especialista → Spotify Web API → recomenda 1 música mais popular por gênero + década
-
-import base64, json, sys
+import base64, json, sys, random
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
@@ -98,7 +95,19 @@ def buscar_top_decada(token: str, genero: str, decada: tuple, market="BR"):
     if not items:
         return None
     items.sort(key=lambda t: int(t.get("popularity", 0)), reverse=True)
-    top = items[0]
+
+    # Filtrar por artistas únicos
+    artistas_vistos = set()
+    items_unicos = []
+    for item in items:
+        artista_principal = item.get("artists", [{}])[0].get("name", "")
+        if artista_principal not in artistas_vistos:
+            artistas_vistos.add(artista_principal)
+            items_unicos.append(item)
+            if len(items_unicos) >= 10:
+                break
+
+    top = random.choice(items_unicos if items_unicos else items[:10])
     artistas = ", ".join(a["name"] for a in top.get("artists", []))
     return {
         "title": top.get("name"),
@@ -111,8 +120,8 @@ def buscar_top_decada(token: str, genero: str, decada: tuple, market="BR"):
 
 def explicar_recomendacao(genero, decada, rec):
     return (
-        f"A música '{rec['title']}' foi escolhida porque é a mais popular "
-        f"entre as faixas de {genero} lançadas entre {decada[0]} e {decada[1]} "
+        f"A música '{rec['title']}' foi escolhida aleatoriamente "
+        f"entre as top 10 faixas de {genero} mais populares lançadas entre {decada[0]} e {decada[1]} "
         f"segundo o Spotify."
     )
 
@@ -143,16 +152,16 @@ def main():
         return
 
     print("\n--- Recomendação ---")
-    print(f"🎵 Música : {rec['title']}")
-    print(f"👤 Artista: {rec['artists']}")
+    print(f"Música: {rec['title']}")
+    print(f"Artista: {rec['artists']}")
     if rec.get("album"):
-        print(f"💿 Álbum  : {rec['album']}")
-    print(f"📅 Lanço.: {rec['release_date']}")
-    print(f"📈 Popularidade: {rec['popularity']}")
+        print(f"Álbum: {rec['album']}")
+    print(f"Lançamento: {rec['release_date']}")
+    print(f"Popularidade: {rec['popularity']}")
     if rec.get("link"):
-        print(f"🔗 Spotify: {rec['link']}")
-    print(f"ℹ️ Explicação: {explicar_recomendacao(genero, decada, rec)}")
+        print(f"Spotify: {rec['link']}")
+    print(f"Explicação: {explicar_recomendacao(genero, decada, rec)}")
 
 
 if __name__ == "__main__":
-    main()
+    main() 
